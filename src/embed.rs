@@ -1,14 +1,8 @@
-
-use poem::{
-    async_trait,
-    http::{header, Method, StatusCode},
-    listener::TcpListener,
-    Endpoint, Request, Response, Route, Server,
-};
-use poem::Result;
+use poem::http::{header, Method, StatusCode};
+use poem::{async_trait, Endpoint, Request, Response, Result};
 
 #[derive(rust_embed::RustEmbed)]
-#[folder = "./asserts"]
+#[folder = "../frontend/dist"]
 struct Asset;
 pub struct StaticEmbed;
 
