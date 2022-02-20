@@ -36,7 +36,6 @@ where
     T::from_str(&s).map_err(de::Error::custom)
 }
 
-
 #[handler]
 pub async fn add_book(Json(req): Json<AddBookReq>, Data(token): Data<&Token>) -> Result<JsonValue> {
     is_admin(token)?;

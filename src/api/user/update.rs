@@ -1,7 +1,6 @@
 use super::RE_PASSWORD;
 use crate::api::{from_str, new_success_resp, validate, JsonValue};
 use crate::auth::Token;
-
 use crate::db::user::{update as db_update, verify, UpdateUser};
 use crate::error::Error;
 use poem::web::{Data, Json};

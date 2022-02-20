@@ -1,8 +1,8 @@
 use crate::api::{new_success_resp, validate, JsonValue};
 
 use super::RE_PASSWORD;
-use crate::db::encode_password;
-use crate::db::user::{add, exist, Role, User, Status};
+
+use crate::db::user::{add, exist, Role, Status, User};
 use crate::error::{Error, SUCCESS_CODE};
 use poem::web::Json;
 use poem::{handler, Result};
@@ -49,13 +49,13 @@ impl Default for RegisterResp {
 #[handler]
 pub async fn register(Json(req): Json<RegisterReq>) -> Result<JsonValue> {
     validate(&req)?;
-    if exist(&req.email).await.is_ok() {
+    if exist(&req.email).await.is_some() {
         return Err(Error::UserAlreadyExist.into());
     }
 
     let user = User {
         username: req.username,
-        password: encode_password(&req.password),
+        password: req.password,
         sid: req.sid.to_string(),
         email: req.email,
         introduction: req.introduction,

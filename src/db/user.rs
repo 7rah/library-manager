@@ -1,5 +1,3 @@
-use std::str::FromStr;
-
 use super::{encode_password, RB};
 use crate::error::Error;
 use log::debug;
@@ -7,6 +5,7 @@ use rbatis::crud::{Skip, CRUD};
 use rbatis::crud_table;
 use serde::{Deserialize, Serialize};
 use serde_repr::*;
+use std::str::FromStr;
 
 #[derive(Deserialize_repr, Serialize_repr, Debug, Clone, PartialEq, Eq)]
 #[repr(u8)]
@@ -79,11 +78,8 @@ pub struct UpdateUser {
     pub status: Option<Status>,
 }
 
-pub async fn exist(email: impl AsRef<str>) -> Result<(), Error> {
-    query(email.as_ref())
-        .await
-        .ok_or(Error::UserAlreadyExist)
-        .map(|_| ())
+pub async fn exist(email: impl AsRef<str>) -> Option<()> {
+    query(email.as_ref()).await.map(|_| ())
     /*
     let w = RB.new_wrapper().eq("email", email.as_ref());
     let c = RB
@@ -109,6 +105,7 @@ pub async fn query(email: impl AsRef<str>) -> Option<User> {
 
 //default role: User
 pub async fn add(mut user: User, role: Option<Role>) -> Option<()> {
+    user.password = encode_password(user.password);
     let role = role.map_or(Role::User, |r| r);
     user.role = role;
     RB.save(&user, &[]).await.is_ok().then(|| ())
@@ -116,7 +113,8 @@ pub async fn add(mut user: User, role: Option<Role>) -> Option<()> {
 
 pub async fn verify(email: impl AsRef<str>, password: impl AsRef<str>) -> Option<User> {
     let user = query(email).await?;
-    if user.password == encode_password(password) {
+
+    if user.password == encode_password(password.as_ref()) {
         Some(user)
     } else {
         None
@@ -130,8 +128,8 @@ pub async fn list() -> Result<Vec<User>, Error> {
     })
 }
 
-pub async fn update(email: impl AsRef<str>,mut user: UpdateUser) -> Result<(), Error> {
-    exist(email.as_ref()).await?;
+pub async fn update(email: impl AsRef<str>, mut user: UpdateUser) -> Result<(), Error> {
+    exist(email.as_ref()).await.ok_or(Error::UserNotExist)?;
     if let Some(password) = user.password {
         user.password = Some(encode_password(&password));
     }

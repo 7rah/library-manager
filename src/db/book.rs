@@ -1,9 +1,7 @@
-use rbatis::crud::Skip;
-
 use crate::error::Error;
 use anyhow::Result;
 use log::debug;
-use rbatis::crud::CRUD;
+use rbatis::crud::{Skip, CRUD};
 use rbatis::crud_table;
 use serde::{Deserialize, Serialize};
 

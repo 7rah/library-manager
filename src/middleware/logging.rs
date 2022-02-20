@@ -1,12 +1,9 @@
 use colored::Colorize;
 use log::{info, warn};
-
 use poem::{async_trait, Endpoint, IntoResponse, Middleware, Request, Response, Result};
-
 use time::macros::format_description;
 use time::UtcOffset;
 use tracing_subscriber::fmt::time::OffsetTime;
-
 use tracing_subscriber::prelude::*;
 use tracing_subscriber::EnvFilter;
 

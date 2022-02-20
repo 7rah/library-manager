@@ -1,12 +1,10 @@
-use log::debug;
-
-use rbatis::crud::CRUD;
-use rbatis::{crud_table, sql, DateTimeNative};
-
-use crate::error::Error;
-
 use super::book::{verify_borrow, Book};
 use super::user::exist;
+use crate::error::Error;
+use chrono::{Local, NaiveDateTime, Utc};
+use log::debug;
+use rbatis::crud::CRUD;
+use rbatis::{crud_table, sql};
 
 use super::RB;
 
@@ -15,8 +13,8 @@ pub struct BorrowedBook {
     pub isbn: String,
     pub email: String,
     pub book_name: String,
-    pub borrowed_date: DateTimeNative,
-    pub return_date: Option<DateTimeNative>,
+    pub borrowed_date: NaiveDateTime,
+    pub return_date: Option<NaiveDateTime>,
 }
 
 #[crud_table(table_name:return_book)]
@@ -24,8 +22,8 @@ pub struct ReturnBook {
     pub isbn: String,
     pub email: String,
     pub book_name: String,
-    pub borrowed_date: DateTimeNative,
-    pub return_date: Option<DateTimeNative>,
+    pub borrowed_date: NaiveDateTime,
+    pub return_date: Option<NaiveDateTime>,
 }
 
 pub async fn list_borrowed_book(email: impl AsRef<str>) -> Result<Vec<BorrowedBook>, Error> {
@@ -46,12 +44,12 @@ pub async fn list_return_book(email: impl AsRef<str>) -> Result<Vec<ReturnBook>,
         })
 }
 
-fn now_with_timezone() -> DateTimeNative {
-    DateTimeNative::now()
+fn now_with_timezone() -> NaiveDateTime {
+    Utc::now().with_timezone(&Local).naive_local()
 }
 
 pub async fn borrow(email: impl AsRef<str>, isbns: &[String]) -> Result<(), Error> {
-    exist(&email).await?;
+    exist(&email).await.ok_or(Error::UserNotExist)?;
     verify_borrow(isbns).await?;
     let books = RB
         .fetch_list_by_column::<Book, _>("isbn", isbns)

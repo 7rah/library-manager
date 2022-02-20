@@ -3,5 +3,6 @@ listen_addr = "127.0.0.1:3000"
 log = "info"
 
 [db]
-addr = "mysql://root:123456@localhost:3306/books_manager"
+addr = "sqlite://:memory:"
+#addr = "mysql://root:123456@localhost:3306/books_manager"
 log = "warn"

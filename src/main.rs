@@ -1,24 +1,24 @@
-use api::admin::user::list;
+use api::admin::book::{add_book, delete, update as update_book};
+use api::admin::user::{list, update as update_user};
+use api::book::borrow::borrow_book;
+use api::book::borrow_record::list_borrow;
 use api::book::list::get_list;
+use api::book::return_book::return_book;
 use api::book::return_record::list_return;
+use api::book::search::search_list;
 use api::user::info::get_info;
 use api::user::login::login;
 use api::user::logout::logout;
 use api::user::register::register;
-use backend::api::admin::book::{add_book, delete, update as update_book};
-use backend::api::admin::user::update as update_user;
-use backend::api::book::borrow::borrow_book;
-use backend::api::book::borrow_record::list_borrow;
-use backend::api::book::return_book::return_book;
-use backend::api::book::search::search_list;
-use backend::api::user::update::{change_password, update as update_user_info};
-use backend::embed::StaticEmbed;
-use backend::{api, init, middleware, CONFIG};
+use api::user::update::{change_password, update as update_user_info};
+use backend::{api, embed, init, middleware, CONFIG};
+use embed::StaticEmbed;
 use log::info;
 use middleware::{LogMiddleware, TokenMiddleware};
 use poem::listener::TcpListener;
 use poem::{get, post, EndpointExt, Result, Route, Server};
 
+#[rustfmt::skip]
 #[tokio::main]
 async fn main() -> Result<(), std::io::Error> {
     init().await;
@@ -30,10 +30,7 @@ async fn main() -> Result<(), std::io::Error> {
         .nest("/prod-api/books-manager/user/login", post(login))
         .nest("/prod-api/books-manager/user/info", get(get_info))
         .nest("/prod-api/books-manager/user/logout", get(logout))
-        .nest(
-            "/prod-api/books-manager/user/update",
-            post(update_user_info),
-        )
+        .nest("/prod-api/books-manager/user/update",post(update_user_info))
         .nest("/prod-api/books-manager/user/change_password",post(change_password))
         .nest("/prod-api/books-manager/book/search", post(search_list))
         .nest("/prod-api/books-manager/book/borrow", post(borrow_book))
@@ -44,14 +41,8 @@ async fn main() -> Result<(), std::io::Error> {
         .nest("/prod-api/books-manager/admin/user/list", get(list))
         .nest("/prod-api/books-manager/admin/book/delete", post(delete))
         .nest("/prod-api/books-manager/admin/book/add", post(add_book))
-        .nest(
-            "/prod-api/books-manager/admin/book/update",
-            post(update_book),
-        )
-        .nest(
-            "/prod-api/books-manager/admin/user/update",
-            post(update_user),
-        )
+        .nest("/prod-api/books-manager/admin/book/update",post(update_book))
+        .nest("/prod-api/books-manager/admin/user/update",post(update_user))
         .with(LogMiddleware)
         .with(TokenMiddleware);
 

@@ -3,13 +3,11 @@ pub mod book;
 pub mod user;
 
 use crate::error::{Error, SUCCESS_CODE};
-
 use poem::web::Json;
-
 use serde::de::{self, Deserializer};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use std::fmt::Display;
+use std::fmt::{Debug, Display};
 use std::str::FromStr;
 use validator::Validate;
 
@@ -57,7 +55,7 @@ fn new_err_from_message(message: impl AsRef<str>) -> JsonValue {
 }
 */
 
-fn from_str<'de, T, D>(deserializer: D) -> Result<T, D::Error>
+pub fn from_str<'de, T, D>(deserializer: D) -> Result<T, D::Error>
 where
     T: FromStr,
     T::Err: Display,
@@ -69,11 +67,12 @@ where
 
 fn from_str_option<'de, D, T>(deserializer: D) -> Result<Option<T>, D::Error>
 where
-    T: FromStr,
+    T: FromStr + Debug,
     D: Deserializer<'de>,
 {
-    let remote = Option::<&str>::deserialize(deserializer)?;
-    if let Some(s) = remote {
+    let remote = Option::<&str>::deserialize(deserializer);
+
+    if let Ok(Some(s)) = remote {
         if let Ok(t) = T::from_str(s) {
             return Ok(Some(t));
         }

@@ -17,12 +17,11 @@ struct Data {
     name: String,
     email: String,
     sid: String,
-    age:String,
+    age: String,
     sex: String,
     roles: String,
     introduction: String,
     avatar: String,
-
 }
 
 #[handler]

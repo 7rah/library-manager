@@ -1,15 +1,11 @@
 use crate::api::admin::is_admin;
 use crate::api::user::RE_PASSWORD;
-use crate::api::{new_success_resp, to_json, validate, JsonValue};
+use crate::api::{from_str_option, new_success_resp, to_json, validate, JsonValue};
 use crate::auth::Token;
-use crate::db::encode_password;
-use crate::db::user::{update as db_update, Role, Status, UpdateUser};
+use crate::db::user::{list as db_list, update as db_update, Role, Status, UpdateUser};
 use crate::error::SUCCESS_CODE;
 use poem::web::{Data as PoemData, Json};
 use poem::{handler, Result};
-
-use crate::api::from_str_option;
-use crate::db::user::list as db_list;
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 
@@ -59,7 +55,7 @@ pub async fn list(PoemData(token): PoemData<&Token>) -> Result<JsonValue> {
 pub struct UpdateUserReq {
     #[validate(regex(path = "RE_PASSWORD", message = "invalid password"))]
     password: Option<String>,
-    #[serde(deserialize_with = "from_str_option")]
+    #[serde(deserialize_with = "from_str_option", default)]
     status: Option<Status>,
     role: Option<Role>,
     #[validate(email)]
@@ -73,15 +69,14 @@ pub async fn update(
 ) -> Result<JsonValue> {
     is_admin(token)?;
     validate(&req)?;
-    let password = req.password.map(encode_password);
 
     let user = UpdateUser {
         age: None,
         introduction: None,
         sex: None,
-        status: req.status.clone(),
+        status: req.status,
         role: req.role.clone(),
-        password,
+        password: req.password,
         sid: None,
         username: None,
     };
