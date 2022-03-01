@@ -3,8 +3,7 @@ use crate::api::{from_str_option, new_success_resp, to_json, validate, JsonValue
 use crate::auth::Token;
 use crate::db::user::{list as db_list, update as db_update, UpdateUser};
 use crate::error::SUCCESS_CODE;
-use crate::types::{Email, Password, Sid, Username};
-use crate::types::{Role, Status};
+use crate::types::{Email, Password, Role, Sid, Status, Username};
 use poem::web::{Data as PoemData, Json};
 use poem::{handler, Result};
 use serde::{Deserialize, Serialize};

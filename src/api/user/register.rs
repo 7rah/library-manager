@@ -1,8 +1,7 @@
 use crate::api::{new_success_resp, validate, JsonValue};
 use crate::db::user::{add, exist, User};
 use crate::error::{Error, SUCCESS_CODE};
-use crate::types::{Age, Email, Introduction, Password, Sex, Sid, Username};
-use crate::types::{Role, Status};
+use crate::types::{Age, Email, Introduction, Password, Role, Sex, Sid, Status, Username};
 use poem::web::Json;
 use poem::{handler, Result};
 use serde::{Deserialize, Serialize};

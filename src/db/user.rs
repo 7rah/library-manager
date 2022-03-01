@@ -1,11 +1,10 @@
 use super::RB;
 use crate::error::Error;
-use crate::types::{Age, Email, Introduction, Password, Sex, Sid, Username};
+use crate::types::{Age, Email, Introduction, Password, Role, Sex, Sid, Status, Username};
 use log::debug;
 use rbatis::crud::{Skip, CRUD};
 use rbatis::crud_table;
 use serde::{Deserialize, Serialize};
-use crate::types::{Role, Status};
 
 #[crud_table(table_name:user)]
 #[derive(Clone, Debug, Serialize, Deserialize)]

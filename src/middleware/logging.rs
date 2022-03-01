@@ -1,3 +1,4 @@
+use crate::CONFIG;
 use colored::Colorize;
 use log::{info, warn};
 use poem::{async_trait, Endpoint, IntoResponse, Middleware, Request, Response, Result};
@@ -6,7 +7,6 @@ use time::UtcOffset;
 use tracing_subscriber::fmt::time::OffsetTime;
 use tracing_subscriber::prelude::*;
 use tracing_subscriber::EnvFilter;
-use crate::CONFIG;
 
 pub fn init_log(level: &str) {
     let mut filter = EnvFilter::try_from_default_env()

@@ -1,6 +1,5 @@
 use crate::error::Error;
-use crate::types::Email;
-use crate::types::Role;
+use crate::types::{Email, Role};
 use jwt_simple::prelude::*;
 use log::debug;
 
