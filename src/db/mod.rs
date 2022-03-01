@@ -1,19 +1,17 @@
+use crate::types::{Role, Status};
+use crate::{
+    db::user::{add, exist},
+    types::{Age, Email, Introduction, Password, Sex, Sid, Username},
+};
 use log::info;
 use rbatis::executor::Executor;
 use rbatis::rbatis::Rbatis;
-
-use crate::db::user::{add, exist, Role};
-
 pub mod book;
 pub mod record;
 pub mod user;
 
 lazy_static::lazy_static! {
     static ref RB:Rbatis=Rbatis::new();
-}
-
-pub fn encode_password(password: impl AsRef<str>) -> String {
-    format!("{:x}", md5::compute(password.as_ref().as_bytes()))
 }
 
 const MYSQL_TABLE_USER: &str = "
@@ -157,21 +155,21 @@ pub async fn init_db(addr: &str) {
         RB.exec(MYSQL_TABLE_RETURN_BOOK, vec![]).await.unwrap();
     }
 
-    if exist("admin@admin.com").await.is_none() {
+    if exist(&Email::from("admin@admin.com")).await.is_none() {
         info!("admin is not exist, create admin account");
         info!("email: admin@admin.com");
         info!("password: asdc1234ASD");
 
         let user = user::User {
-            username: "admin".to_string(),
-            password: "asdc1234ASD".to_string(),
-            sid: "100000000000".to_string(),
-            email: "admin@admin.com".to_string(),
-            introduction: "admin".to_string(),
-            age: "18".to_string(),
-            sex: "unknown".to_string(),
+            username: Username::from("admin"),
+            password: Password::from("asdc1234ASD"),
+            sid: Sid::from("100000000000"),
+            email: Email::from("admin@admin.com"),
+            introduction: Introduction::from("admin"),
+            age: Age::from(18),
+            sex: Sex::from("unknown"),
             role: Role::Admin,
-            status: user::Status::Enabled,
+            status: Status::Enabled,
         };
 
         add(user, Some(Role::Admin)).await.unwrap();

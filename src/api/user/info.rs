@@ -2,6 +2,7 @@ use crate::api::{to_json, JsonValue};
 use crate::auth::Token;
 use crate::db::user::query;
 use crate::error::{Error, SUCCESS_CODE};
+use crate::types::{Age, Email, Introduction, Sex, Sid, Username};
 use poem::web::Data as PoemData;
 use poem::{handler, Result};
 use serde::{Deserialize, Serialize};
@@ -14,13 +15,13 @@ struct GetInfoResp {
 
 #[derive(Debug, Deserialize, Serialize)]
 struct Data {
-    name: String,
-    email: String,
-    sid: String,
-    age: String,
-    sex: String,
+    name: Username,
+    email: Email,
+    sid: Sid,
+    age: Age,
+    sex: Sex,
     roles: String,
-    introduction: String,
+    introduction: Introduction,
     avatar: String,
 }
 

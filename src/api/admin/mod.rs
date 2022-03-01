@@ -1,6 +1,6 @@
 use crate::auth::Token;
-use crate::db::user::Role;
 use crate::error::Error;
+use crate::types::Role;
 
 pub mod book;
 pub mod user;

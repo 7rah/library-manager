@@ -1,6 +1,7 @@
 use crate::auth::verify_token;
-use crate::db::user::{query, Status};
+use crate::db::user::query;
 use crate::error::Error;
+use crate::types::Status;
 use log::debug;
 use poem::{Endpoint, IntoResponse, Middleware, Request, Response, Result};
 /// A middleware that extract token from HTTP headers.

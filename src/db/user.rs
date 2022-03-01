@@ -1,66 +1,22 @@
-use super::{encode_password, RB};
+use super::RB;
 use crate::error::Error;
+use crate::types::{Age, Email, Introduction, Password, Sex, Sid, Username};
 use log::debug;
 use rbatis::crud::{Skip, CRUD};
 use rbatis::crud_table;
 use serde::{Deserialize, Serialize};
-use serde_repr::*;
-use std::str::FromStr;
-
-#[derive(Deserialize_repr, Serialize_repr, Debug, Clone, PartialEq, Eq)]
-#[repr(u8)]
-pub enum Role {
-    Admin = 0,
-    User = 1,
-}
-
-#[derive(Deserialize_repr, Serialize_repr, Debug, Clone, PartialEq, Eq)]
-#[repr(u8)]
-pub enum Status {
-    Disabled = 0,
-    Enabled = 1,
-}
-
-impl ToString for Role {
-    fn to_string(&self) -> String {
-        match self {
-            Role::Admin => "admin".to_string(),
-            Role::User => "user".to_string(),
-        }
-    }
-}
-
-impl ToString for Status {
-    fn to_string(&self) -> String {
-        match self {
-            Status::Enabled => "enabled".to_string(),
-            Status::Disabled => "disabled".to_string(),
-        }
-    }
-}
-
-impl FromStr for Status {
-    type Err = Error;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "enabled" => Ok(Status::Enabled),
-            "disabled" => Ok(Status::Disabled),
-            _ => Err(Error::InvalidData),
-        }
-    }
-}
+use crate::types::{Role, Status};
 
 #[crud_table(table_name:user)]
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct User {
-    pub username: String,
-    pub password: String,
-    pub sid: String,
-    pub email: String,
-    pub introduction: String,
-    pub age: String,
-    pub sex: String,
+    pub username: Username,
+    pub password: Password,
+    pub sid: Sid,
+    pub email: Email,
+    pub introduction: Introduction,
+    pub age: Age,
+    pub sex: Sex,
     pub role: Role,
     pub status: Status,
 }
@@ -68,18 +24,18 @@ pub struct User {
 #[crud_table(table_name:user)]
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct UpdateUser {
-    pub username: Option<String>,
-    pub password: Option<String>,
-    pub sid: Option<String>,
-    pub introduction: Option<String>,
-    pub age: Option<String>,
-    pub sex: Option<String>,
+    pub username: Option<Username>,
+    pub password: Option<Password>,
+    pub sid: Option<Sid>,
+    pub introduction: Option<Introduction>,
+    pub age: Option<Age>,
+    pub sex: Option<Sex>,
     pub role: Option<Role>,
     pub status: Option<Status>,
 }
 
-pub async fn exist(email: impl AsRef<str>) -> Option<()> {
-    query(email.as_ref()).await.map(|_| ())
+pub async fn exist(email: &Email) -> Option<()> {
+    query(email).await.map(|_| ())
     /*
     let w = RB.new_wrapper().eq("email", email.as_ref());
     let c = RB
@@ -97,24 +53,24 @@ pub async fn exist(email: impl AsRef<str>) -> Option<()> {
     */
 }
 
-pub async fn query(email: impl AsRef<str>) -> Option<User> {
-    RB.fetch_by_column::<Option<User>, _>("email", email.as_ref())
+pub async fn query(email: &Email) -> Option<User> {
+    RB.fetch_by_column::<Option<User>, _>("email", email)
         .await
         .ok()?
 }
 
 //default role: User
 pub async fn add(mut user: User, role: Option<Role>) -> Option<()> {
-    user.password = encode_password(user.password);
+    user.password = user.password.encode();
     let role = role.map_or(Role::User, |r| r);
     user.role = role;
     RB.save(&user, &[]).await.is_ok().then(|| ())
 }
 
-pub async fn verify(email: impl AsRef<str>, password: impl AsRef<str>) -> Option<User> {
+pub async fn verify(email: &Email, password: &Password) -> Option<User> {
     let user = query(email).await?;
 
-    if user.password == encode_password(password.as_ref()) {
+    if user.password == password.encode() {
         Some(user)
     } else {
         None
@@ -128,12 +84,12 @@ pub async fn list() -> Result<Vec<User>, Error> {
     })
 }
 
-pub async fn update(email: impl AsRef<str>, mut user: UpdateUser) -> Result<(), Error> {
-    exist(email.as_ref()).await.ok_or(Error::UserNotExist)?;
+pub async fn update(email: &Email, mut user: UpdateUser) -> Result<(), Error> {
+    exist(email).await.ok_or(Error::UserNotExist)?;
     if let Some(password) = user.password {
-        user.password = Some(encode_password(&password));
+        user.password = Some(password.encode());
     }
-    let w = RB.new_wrapper().eq("email", email.as_ref());
+    let w = RB.new_wrapper().eq("email", email);
     RB.update_by_wrapper(&user, w, &[Skip::Value(rbson::Bson::Null)])
         .await
         .map_err(|e| {

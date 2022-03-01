@@ -6,7 +6,6 @@ use time::UtcOffset;
 use tracing_subscriber::fmt::time::OffsetTime;
 use tracing_subscriber::prelude::*;
 use tracing_subscriber::EnvFilter;
-
 use crate::CONFIG;
 
 pub fn init_log(level: &str) {

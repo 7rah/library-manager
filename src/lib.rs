@@ -5,6 +5,7 @@ pub mod db;
 pub mod embed;
 pub mod error;
 pub mod middleware;
+pub mod types;
 
 lazy_static::lazy_static! {
     pub static ref CONFIG:config::Config =  {

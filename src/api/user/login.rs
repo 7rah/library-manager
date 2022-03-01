@@ -1,8 +1,9 @@
-use super::RE_PASSWORD;
 use crate::api::{to_json, JsonValue};
 use crate::auth::create_token;
 use crate::db::user::*;
 use crate::error::{Error, SUCCESS_CODE};
+use crate::types::Status;
+use crate::types::{Email, Password};
 use poem::web::Json;
 use poem::{handler, Result};
 use serde::{Deserialize, Serialize};
@@ -10,10 +11,10 @@ use validator::Validate;
 
 #[derive(Debug, Deserialize, Validate)]
 pub struct LoginReq {
-    #[validate(email)]
-    email: String,
-    #[validate(regex(path = "RE_PASSWORD", message = "invalid password"))]
-    password: String,
+    #[validate]
+    email: Email,
+    #[validate]
+    password: Password,
 }
 
 #[derive(Debug, Serialize)]

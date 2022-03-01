@@ -1,9 +1,10 @@
 use crate::api::admin::is_admin;
-use crate::api::user::RE_PASSWORD;
 use crate::api::{from_str_option, new_success_resp, to_json, validate, JsonValue};
 use crate::auth::Token;
-use crate::db::user::{list as db_list, update as db_update, Role, Status, UpdateUser};
+use crate::db::user::{list as db_list, update as db_update, UpdateUser};
 use crate::error::SUCCESS_CODE;
+use crate::types::{Email, Password, Sid, Username};
+use crate::types::{Role, Status};
 use poem::web::{Data as PoemData, Json};
 use poem::{handler, Result};
 use serde::{Deserialize, Serialize};
@@ -22,9 +23,9 @@ struct Data {
 
 #[derive(Debug, Serialize)]
 struct User {
-    name: String,
-    sid: String,
-    email: String,
+    name: Username,
+    sid: Sid,
+    email: Email,
     role: String,
     status: String,
 }
@@ -53,13 +54,12 @@ pub async fn list(PoemData(token): PoemData<&Token>) -> Result<JsonValue> {
 
 #[derive(Debug, Deserialize, Validate)]
 pub struct UpdateUserReq {
-    #[validate(regex(path = "RE_PASSWORD", message = "invalid password"))]
-    password: Option<String>,
+    #[validate]
+    password: Option<Password>,
     #[serde(deserialize_with = "from_str_option", default)]
     status: Option<Status>,
     role: Option<Role>,
-    #[validate(email)]
-    email: String,
+    email: Email,
 }
 
 #[handler]
@@ -81,7 +81,7 @@ pub async fn update(
         username: None,
     };
 
-    db_update(req.email, user).await?;
+    db_update(&req.email, user).await?;
 
     Ok(new_success_resp())
 }
