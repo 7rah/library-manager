@@ -1,39 +1,25 @@
 use crate::api::admin::is_admin;
-use crate::api::{from_str_option, new_success_resp, validate, JsonValue};
+use crate::api::{new_success_resp, validate, JsonValue};
 use crate::auth::Token;
 use crate::db::book::{add, delete as db_delete, update as db_update, Book, UpdateBook};
+use crate::types::{Author, Bookname, Isbn, Press, Stock};
 use poem::web::{Data, Json};
 use poem::{handler, Result};
-use serde::de::{self, Deserializer};
 use serde::Deserialize;
-use std::fmt::Display;
-use std::str::FromStr;
-use validator::{Validate, ValidationError};
+use validator::Validate;
 
 #[derive(Debug, Deserialize, Validate)]
 pub struct AddBookReq {
-    #[validate(length(min = 1, max = 50))]
-    name: String,
-    #[validate(range(min = 1_0000_0000_0000, max = 9_9999_9999_9999))]
-    #[serde(deserialize_with = "from_str")]
-    isbn: u64,
-    #[validate(length(min = 0, max = 20))]
-    author: String,
-    #[validate(length(min = 0, max = 20))]
-    press: String,
-    #[validate(range(min = 0, max = 100))]
-    #[serde(deserialize_with = "from_str")]
-    stock: u32,
-}
-
-fn from_str<'de, T, D>(deserializer: D) -> Result<T, D::Error>
-where
-    T: FromStr,
-    T::Err: Display,
-    D: Deserializer<'de>,
-{
-    let s = String::deserialize(deserializer)?;
-    T::from_str(&s).map_err(de::Error::custom)
+    #[validate]
+    name: Bookname,
+    #[validate]
+    isbn: Isbn,
+    #[validate]
+    author: Author,
+    #[validate]
+    press: Press,
+    #[validate]
+    stock: Stock,
 }
 
 #[handler]
@@ -44,7 +30,7 @@ pub async fn add_book(Json(req): Json<AddBookReq>, Data(token): Data<&Token>) ->
     let book = Book {
         name: req.name,
         author: req.author,
-        isbn: req.isbn.to_string(),
+        isbn: req.isbn,
         press: req.press,
         stock: req.stock,
         remain: req.stock,
@@ -59,17 +45,7 @@ pub async fn add_book(Json(req): Json<AddBookReq>, Data(token): Data<&Token>) ->
 
 #[derive(Debug, Deserialize, Validate)]
 pub struct DeleteReq {
-    #[validate(custom = "validate_isbn")]
-    isbns: Vec<String>,
-}
-
-fn validate_isbn(isbns: &[String]) -> Result<(), ValidationError> {
-    for i in isbns {
-        if i.len() != 13 || i.parse::<u64>().is_err() {
-            return Err(ValidationError::new("invaild isbn"));
-        }
-    }
-    Ok(())
+    isbns: Vec<Isbn>,
 }
 
 #[handler]
@@ -86,18 +62,16 @@ pub async fn delete(Json(req): Json<DeleteReq>, Data(token): Data<&Token>) -> Re
 
 #[derive(Debug, Deserialize, Validate)]
 pub struct UpdateBookReq {
-    #[validate(length(min = 1, max = 50))]
-    name: Option<String>,
-    #[validate(range(min = 1_0000_0000_0000, max = 9_9999_9999_9999))]
-    #[serde(deserialize_with = "from_str")]
-    isbn: u64,
-    #[validate(length(min = 0, max = 20))]
-    author: Option<String>,
-    #[validate(length(min = 0, max = 20))]
-    press: Option<String>,
-    #[validate(range(min = 0, max = 100))]
-    #[serde(deserialize_with = "from_str_option")]
-    stock: Option<u32>,
+    #[validate]
+    name: Option<Bookname>,
+    #[validate]
+    isbn: Isbn,
+    #[validate]
+    author: Option<Author>,
+    #[validate]
+    press: Option<Press>,
+    #[validate]
+    stock: Option<Stock>,
 }
 
 #[handler]
@@ -107,18 +81,15 @@ pub async fn update(
 ) -> Result<JsonValue> {
     validate(&req)?;
     is_admin(token)?;
+    let book = UpdateBook {
+        name: req.name,
+        author: req.author,
+        press: req.press,
+        stock: req.stock,
+        remain: None,
+    };
 
-    db_update(
-        &req.isbn.to_string(),
-        UpdateBook {
-            name: req.name,
-            author: req.author,
-            press: req.press,
-            stock: req.stock,
-            remain: None,
-        },
-    )
-    .await?;
+    db_update(&req.isbn, book).await?;
 
     Ok(new_success_resp())
 }
