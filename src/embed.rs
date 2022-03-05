@@ -2,7 +2,7 @@ use poem::http::{header, Method, StatusCode};
 use poem::{async_trait, Endpoint, Request, Response, Result};
 
 #[derive(rust_embed::RustEmbed)]
-#[folder = "../frontend/dist"]
+#[folder = "asserts/dist"]
 struct Asset;
 pub struct StaticEmbed;
 
