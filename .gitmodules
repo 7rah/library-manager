@@ -1,0 +1,3 @@
+[submodule "asserts"]
+	path = asserts
+	url = https://gitee.com/qnxg-practice-2021/frontend.git
