@@ -35,25 +35,9 @@ pub fn new_success_resp() -> JsonValue {
 pub fn validate(data: &impl Validate) -> Result<(), Error> {
     match data.validate() {
         Ok(_) => Ok(()),
-        Err(_) => Err(Error::InvalidData),
+        Err(e) => Err(Error::InvalidData(e.to_string())),
     }
 }
-
-/*
-pub fn new_err(e: Error) -> JsonValue {
-    to_json(ErrResp {
-        code: e as u32,
-        message: e.to_string(),
-    })
-}
-
-fn new_err_from_message(message: impl AsRef<str>) -> JsonValue {
-    to_json(ErrResp {
-        code: Error::InternalErr as u32,
-        message: message.as_ref().to_string(),
-    })
-}
-*/
 
 pub fn from_str<'de, T, D>(deserializer: D) -> Result<T, D::Error>
 where

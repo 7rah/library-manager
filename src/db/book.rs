@@ -20,9 +20,9 @@ pub struct Book {
 }
 
 pub async fn fuzzy_query(
-    book_name: &Bookname,
-    isbn: &Isbn,
-    author: &Author,
+    book_name: &Option<String>,
+    isbn: &Option<String>,
+    author: &Option<String>,
 ) -> Result<Vec<Book>, Error> {
     let w = RB
         .new_wrapper()

@@ -45,6 +45,7 @@ pub async fn add_book(Json(req): Json<AddBookReq>, Data(token): Data<&Token>) ->
 
 #[derive(Debug, Deserialize, Validate)]
 pub struct DeleteReq {
+    #[validate]
     isbns: Vec<Isbn>,
 }
 

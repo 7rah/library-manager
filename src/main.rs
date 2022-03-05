@@ -26,23 +26,27 @@ async fn main() -> Result<(), std::io::Error> {
     let app = Route::new()
         .nest("/", StaticEmbed)
         .nest("/index.html", StaticEmbed)
+
         .nest("/prod-api/books-manager/user/register", post(register))
         .nest("/prod-api/books-manager/user/login", post(login))
         .nest("/prod-api/books-manager/user/info", get(get_info))
         .nest("/prod-api/books-manager/user/logout", get(logout))
         .nest("/prod-api/books-manager/user/update",post(update_user_info))
         .nest("/prod-api/books-manager/user/change_password",post(change_password))
+
         .nest("/prod-api/books-manager/book/search", post(search_list))
         .nest("/prod-api/books-manager/book/borrow", post(borrow_book))
         .nest("/prod-api/books-manager/book/return", post(return_book))
         .nest("/prod-api/books-manager/book/list", get(get_list))
         .nest("/prod-api/books-manager/book/list_borrow", get(list_borrow))
         .nest("/prod-api/books-manager/book/list_return", get(list_return))
+
         .nest("/prod-api/books-manager/admin/user/list", get(list))
         .nest("/prod-api/books-manager/admin/book/delete", post(delete))
         .nest("/prod-api/books-manager/admin/book/add", post(add_book))
         .nest("/prod-api/books-manager/admin/book/update",post(update_book))
         .nest("/prod-api/books-manager/admin/user/update",post(update_user))
+
         .with(LogMiddleware)
         .with(TokenMiddleware);
 

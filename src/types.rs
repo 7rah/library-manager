@@ -20,7 +20,7 @@ impl Validate for Username {
     fn validate(&self) -> Result<(), validator::ValidationErrors> {
         validate_length(&self.0, Some(1), Some(10), None)
             .then(|| ())
-            .ok_or_else(|| new_err("username", "invalid username"))
+            .ok_or_else(|| new_err("username", "姓名为 10 个以下中英文字符"))
     }
 }
 
@@ -37,7 +37,7 @@ impl Validate for Bookname {
     fn validate(&self) -> Result<(), validator::ValidationErrors> {
         validate_length(&self.0, Some(1), Some(50), None)
             .then(|| ())
-            .ok_or_else(|| new_err("bookname", "invalid bookname"))
+            .ok_or_else(|| new_err("bookname", "书籍名称为 50 以下中英文字符"))
     }
 }
 
@@ -48,7 +48,7 @@ impl Validate for Introduction {
     fn validate(&self) -> Result<(), validator::ValidationErrors> {
         validate_length(&self.0, Some(0), Some(200), None)
             .then(|| ())
-            .ok_or_else(|| new_err("introduction", "invalid introduction"))
+            .ok_or_else(|| new_err("introduction", "自我介绍为 200 以下中英文字符"))
     }
 }
 
@@ -65,7 +65,7 @@ impl Validate for Email {
     fn validate(&self) -> Result<(), validator::ValidationErrors> {
         validate_email(&self.0)
             .then(|| ())
-            .ok_or_else(|| new_err("introduction", "invalid email"))
+            .ok_or_else(|| new_err("introduction", "邮箱格式不正确"))
     }
 }
 
@@ -80,13 +80,14 @@ pub struct Sid(String);
 
 impl Validate for Sid {
     fn validate(&self) -> Result<(), validator::ValidationErrors> {
+        let e = new_err("studentid", "学号为 12 位纯数字");
         if self.0.len() != 12 {
-            return Err(new_err("studentid", "invalid student id"));
+            return Err(e);
         }
 
         for c in self.0.chars() {
             if !c.is_ascii_digit() {
-                return Err(new_err("studentid", "invalid student id"));
+                return Err(e);
             }
         }
 
@@ -105,13 +106,14 @@ pub struct Isbn(String);
 
 impl Validate for Isbn {
     fn validate(&self) -> Result<(), validator::ValidationErrors> {
+        let e = new_err("isbn", "ISBN 号为 13 位纯数字");
         if self.0.len() != 13 {
-            return Err(new_err("isbn", "invalid isbn"));
+            return Err(e);
         }
 
         for c in self.0.chars() {
             if !c.is_ascii_digit() {
-                return Err(new_err("isbn", "invalid isbn"));
+                return Err(e);
             }
         }
 
@@ -126,7 +128,7 @@ impl Validate for Author {
     fn validate(&self) -> Result<(), validator::ValidationErrors> {
         validate_length(&self.0, Some(1), Some(20), None)
             .then(|| ())
-            .ok_or_else(|| new_err("author", "invalid author"))
+            .ok_or_else(|| new_err("author", "作者名为 20 以下中英文字符"))
     }
 }
 
@@ -137,7 +139,7 @@ impl Validate for Press {
     fn validate(&self) -> Result<(), validator::ValidationErrors> {
         validate_length(&self.0, Some(1), Some(20), None)
             .then(|| ())
-            .ok_or_else(|| new_err("press", "invalid press"))
+            .ok_or_else(|| new_err("press", "出版社为 20 以下中英文字符"))
     }
 }
 
@@ -148,7 +150,7 @@ impl Validate for Stock {
     fn validate(&self) -> Result<(), validator::ValidationErrors> {
         validate_range(&self.0, Some(&0u32), Some(&100u32))
             .then(|| ())
-            .ok_or_else(|| new_err("stock", "invalid stock"))
+            .ok_or_else(|| new_err("stock", "书籍库存为 0~100 之间整数"))
     }
 }
 
@@ -173,10 +175,12 @@ pub struct Password(String);
 
 impl Validate for Password {
     fn validate(&self) -> Result<(), validator::ValidationErrors> {
-        RE_PASSWORD
-            .is_match(&self.0)
-            .then(|| ())
-            .ok_or_else(|| new_err("password", "invalid password"))
+        RE_PASSWORD.is_match(&self.0).then(|| ()).ok_or_else(|| {
+            new_err(
+                "password",
+                "密码为 8~16 位大小写字母加数字的组合（不包含特殊字符）",
+            )
+        })
     }
 }
 
@@ -203,7 +207,7 @@ impl Validate for Age {
             .map_err(|_| new_err("age", "falied to parse int"))?;
         validate_range(&age, Some(&0u32), Some(&100u32))
             .then(|| ())
-            .ok_or_else(|| new_err("age", "invalid age"))
+            .ok_or_else(|| new_err("age", "年龄为 0~100 间的整数"))
     }
 }
 
@@ -222,7 +226,7 @@ impl Validate for Sex {
             "male" => Ok(()),
             "female" => Ok(()),
             "unknown" => Ok(()),
-            _ => Err(new_err("sex", "invalid sex")),
+            _ => Err(new_err("sex", "expected `male` `female` `unknown`")),
         }
     }
 }
@@ -272,7 +276,9 @@ impl FromStr for Status {
         match s {
             "enabled" => Ok(Status::Enabled),
             "disabled" => Ok(Status::Disabled),
-            _ => Err(Error::InvalidData),
+            _ => Err(Error::InvalidData(
+                "unknown status, excepted `enabled` or `disabled`".into(),
+            )),
         }
     }
 }

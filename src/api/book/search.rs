@@ -2,7 +2,6 @@ use crate::api::{to_json, validate, JsonValue};
 use crate::auth::Token;
 use crate::db::book::{fuzzy_query, Book};
 use crate::error::SUCCESS_CODE;
-use crate::types::{Author, Bookname, Isbn};
 use poem::web::{Data as PoemData, Json};
 use poem::{handler, Result};
 use serde::{Deserialize, Serialize};
@@ -21,12 +20,12 @@ struct Data {
 
 #[derive(Debug, Deserialize, Validate)]
 pub struct SearchListReq {
-    #[validate]
-    name: Bookname,
-    #[validate]
-    isbn: Isbn,
-    #[validate]
-    author: Author,
+    #[validate(length(max = 20))]
+    name: Option<String>,
+    #[validate(length(max = 13))]
+    isbn: Option<String>,
+    #[validate(length(max = 20))]
+    author: Option<String>,
 }
 
 #[handler]

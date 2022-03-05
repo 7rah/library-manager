@@ -55,8 +55,12 @@ pub enum Error {
     #[error("{}", fmt(110000, "书籍列表为空"))]
     BookListWasEmpty,
 
-    #[error("{}", fmt(120000, "不合法的数据，请检查你的输入"))]
-    InvalidData,
+    #[error(
+        "{{\"code\":{code},\"message\":\"{message} {0}\"}}",
+        code = 120000,
+        message = "不合法的数据，请检查你的输入"
+    )]
+    InvalidData(String),
 
     #[error("{}", fmt(130000, "非法的 ISBN 号"))]
     InvalidIsbn,
@@ -84,7 +88,7 @@ impl ResponseError for Error {
 }
 
 impl From<ValidationErrors> for Error {
-    fn from(_v: ValidationErrors) -> Self {
-        Self::InvalidData
+    fn from(v: ValidationErrors) -> Self {
+        Self::InvalidData(v.to_string())
     }
 }
