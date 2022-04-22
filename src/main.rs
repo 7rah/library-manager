@@ -11,10 +11,10 @@ use api::user::login::login;
 use api::user::logout::logout;
 use api::user::register::register;
 use api::user::update::{change_password, update as update_user_info};
-use backend::{api, embed, init, middleware, CONFIG};
-use embed::StaticEmbed;
+use backend::embed::Assets;
+use backend::{api, init, middleware, CONFIG};
 use log::info;
-use middleware::{LogMiddleware, TokenMiddleware};
+use poem::endpoint::{EmbeddedFileEndpoint, EmbeddedFilesEndpoint};
 use poem::listener::TcpListener;
 use poem::{get, post, EndpointExt, Result, Route, Server};
 
@@ -24,8 +24,8 @@ async fn main() -> Result<(), std::io::Error> {
     init().await;
 
     let app = Route::new()
-        .nest("/", StaticEmbed)
-        .nest("/index.html", StaticEmbed)
+        .nest("/", EmbeddedFilesEndpoint::<Assets>::new())
+        .nest("/index.html", EmbeddedFileEndpoint::<Assets>::new("index.html"))
 
         .nest("/prod-api/books-manager/user/register", post(register))
         .nest("/prod-api/books-manager/user/login", post(login))
@@ -47,8 +47,8 @@ async fn main() -> Result<(), std::io::Error> {
         .nest("/prod-api/books-manager/admin/book/update",post(update_book))
         .nest("/prod-api/books-manager/admin/user/update",post(update_user))
 
-        .with(LogMiddleware)
-        .with(TokenMiddleware);
+        .around(middleware::log)
+        .around(middleware::token);
 
     let addr = &CONFIG.global.listen_addr;
     info!("serve at http://{addr}");

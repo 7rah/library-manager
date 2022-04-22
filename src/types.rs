@@ -7,56 +7,45 @@ use validator::{
 
 use crate::error::Error;
 
-#[derive(Debug, Deserialize, Serialize, Clone)]
-pub struct Username(String);
-
 fn new_err(field: &'static str, s: &'static str) -> ValidationErrors {
     let mut v = ValidationErrors::new();
     v.add(field, ValidationError::new(s));
     v
 }
 
-impl Validate for Username {
-    fn validate(&self) -> Result<(), validator::ValidationErrors> {
-        validate_length(&self.0, Some(1), Some(10), None)
-            .then(|| ())
-            .ok_or_else(|| new_err("username", "姓名为 10 个以下中英文字符"))
-    }
+macro_rules! impl_validate_str {
+    ($structname: ident,$print_name: expr,$min: expr,$max: expr) => {
+        impl Validate for $structname {
+            fn validate(&self) -> Result<(), validator::ValidationErrors> {
+                validate_length(&self.0, Some($min), Some($max), None)
+                    .then(|| ())
+                    .ok_or_else(|| {
+                        new_err(
+                            stringify!($structname),
+                            concat!($print_name, "为长度在 ", $min, "~", $max, " 的中英文字符"),
+                        )
+                    })
+            }
+        }
+        impl From<&str> for $structname {
+            fn from(s: &str) -> Self {
+                $structname(s.to_string())
+            }
+        }
+    };
 }
 
-impl From<&str> for Username {
-    fn from(s: &str) -> Self {
-        Username(s.to_string())
-    }
-}
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct Username(String);
+impl_validate_str!(Username, "用户名称", 1, 10);
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Bookname(String);
-
-impl Validate for Bookname {
-    fn validate(&self) -> Result<(), validator::ValidationErrors> {
-        validate_length(&self.0, Some(1), Some(50), None)
-            .then(|| ())
-            .ok_or_else(|| new_err("bookname", "书籍名称为 50 以下中英文字符"))
-    }
-}
+impl_validate_str!(Bookname, "书籍名称", 1, 50);
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Introduction(String);
-
-impl Validate for Introduction {
-    fn validate(&self) -> Result<(), validator::ValidationErrors> {
-        validate_length(&self.0, Some(0), Some(200), None)
-            .then(|| ())
-            .ok_or_else(|| new_err("introduction", "自我介绍为 200 以下中英文字符"))
-    }
-}
-
-impl From<&str> for Introduction {
-    fn from(s: &str) -> Self {
-        Introduction(s.to_string())
-    }
-}
+impl_validate_str!(Introduction, "自我介绍", 0, 200);
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Email(String);
@@ -65,7 +54,7 @@ impl Validate for Email {
     fn validate(&self) -> Result<(), validator::ValidationErrors> {
         validate_email(&self.0)
             .then(|| ())
-            .ok_or_else(|| new_err("introduction", "邮箱格式不正确"))
+            .ok_or_else(|| new_err("email", "邮箱格式不正确"))
     }
 }
 
@@ -123,25 +112,11 @@ impl Validate for Isbn {
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Author(String);
-
-impl Validate for Author {
-    fn validate(&self) -> Result<(), validator::ValidationErrors> {
-        validate_length(&self.0, Some(1), Some(20), None)
-            .then(|| ())
-            .ok_or_else(|| new_err("author", "作者名为 20 以下中英文字符"))
-    }
-}
+impl_validate_str!(Author, "作者名", 1, 20);
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Press(String);
-
-impl Validate for Press {
-    fn validate(&self) -> Result<(), validator::ValidationErrors> {
-        validate_length(&self.0, Some(1), Some(20), None)
-            .then(|| ())
-            .ok_or_else(|| new_err("press", "出版社为 20 以下中英文字符"))
-    }
-}
+impl_validate_str!(Press, "出版社", 1, 20);
 
 #[derive(Debug, Deserialize, Serialize, Clone, Copy)]
 pub struct Stock(u32);

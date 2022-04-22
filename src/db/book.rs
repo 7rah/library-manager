@@ -1,6 +1,5 @@
 use crate::error::Error;
 use crate::types::{Author, Bookname, Isbn, Press, Stock};
-use anyhow::Result;
 use log::debug;
 use rbatis::crud::{Skip, CRUD};
 use rbatis::crud_table;
@@ -29,6 +28,7 @@ pub async fn fuzzy_query(
         .like("name", book_name)
         .like("isbn", isbn)
         .like("author", author);
+
     RB.fetch_list_by_wrapper::<Book>(w).await.map_err(|e| {
         debug!("fuzzy_query error: {e}");
         Error::BookNotExist
@@ -115,7 +115,7 @@ pub async fn update(isbn: &Isbn, mut book: UpdateBook) -> Result<(), Error> {
     }
 
     let w = RB.new_wrapper().eq("isbn", isbn);
-    RB.update_by_wrapper(&book, w, &[Skip::Value(rbson::Bson::Null)])
+    RB.update_by_wrapper(&book, w, &[Skip::Value(rbatis::Value::Null)])
         .await
         .map_err(|e| {
             debug!("{e}");

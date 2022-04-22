@@ -93,23 +93,6 @@ pub async fn borrow(email: &Email, isbns: &[Isbn]) -> Result<(), Error> {
 
     Ok(())
 }
-/*
-async fn verify_return(email:&Email, isbns: &[String]) -> Result<(), Error> {
-    let w = RB
-        .new_wrapper_table::<BorrowedBook>()
-        .in_array("isbn", isbns)
-        .eq("email", email);
-    RB.fetch_count_by_wrapper::<BorrowedBook>(w)
-        .await
-        .map_err(|e| {
-            debug!("{e}");
-            Error::DbError
-        })?
-        .eq(&(isbns.len() as u64))
-        .then(|| ())
-        .ok_or(Error::BookIsNotBorrowed)
-}
-*/
 
 pub async fn return_book(email: &Email, isbns: &[Isbn]) -> Result<(), Error> {
     //verify_return(email, isbns).await?;

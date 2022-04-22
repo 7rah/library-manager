@@ -35,21 +35,6 @@ pub struct UpdateUser {
 
 pub async fn exist(email: &Email) -> Option<()> {
     query(email).await.map(|_| ())
-    /*
-    let w = RB.new_wrapper().eq("email", email.as_ref());
-    let c = RB
-        .fetch_count_by_wrapper::<Option<User>>(w)
-        .await
-        .map_err(|e| {
-            debug!("{e}");
-            Error::InternalErr
-        })?;
-    if c != 0 {
-        Ok(())
-    } else {
-        Err(Error::UserNotExist)
-    }
-    */
 }
 
 pub async fn query(email: &Email) -> Option<User> {
@@ -89,7 +74,7 @@ pub async fn update(email: &Email, mut user: UpdateUser) -> Result<(), Error> {
         user.password = Some(password.encode());
     }
     let w = RB.new_wrapper().eq("email", email);
-    RB.update_by_wrapper(&user, w, &[Skip::Value(rbson::Bson::Null)])
+    RB.update_by_wrapper(&user, w, &[Skip::Value(rbatis::Value::Null)])
         .await
         .map_err(|e| {
             debug!("{e}");

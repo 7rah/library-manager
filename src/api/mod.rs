@@ -3,6 +3,7 @@ pub mod book;
 pub mod user;
 
 use crate::error::{Error, SUCCESS_CODE};
+
 use poem::web::Json;
 use serde::de::{self, Deserializer};
 use serde::{Deserialize, Serialize};
@@ -35,7 +36,14 @@ pub fn new_success_resp() -> JsonValue {
 pub fn validate(data: &impl Validate) -> Result<(), Error> {
     match data.validate() {
         Ok(_) => Ok(()),
-        Err(e) => Err(Error::InvalidData(e.to_string())),
+        Err(errs) => {
+            let s = errs.to_string();
+            if &s[s.len() - 4..] == "[{}]" {
+                Err(Error::InvalidData(s[..s.len() - 4].into()))
+            } else {
+                Err(Error::InvalidData(s))
+            }
+        }
     }
 }
 

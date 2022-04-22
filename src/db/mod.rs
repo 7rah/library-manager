@@ -1,7 +1,6 @@
 use crate::db::user::{add, exist};
 use crate::types::{Age, Email, Introduction, Password, Role, Sex, Sid, Status, Username};
 use log::info;
-use rbatis::executor::Executor;
 use rbatis::rbatis::Rbatis;
 pub mod book;
 pub mod record;
